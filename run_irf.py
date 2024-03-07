@@ -19,7 +19,7 @@ import pandas as pd
 import argparse, multiprocessing, json, fnmatch
 from datetime import datetime
 
-from sklearn.externals import joblib
+import joblib
 
 from util_lib.etdata import ETData
 from util_lib.utils import split_path

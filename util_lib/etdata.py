@@ -138,7 +138,7 @@ class ETData():
         ('t', np.float64),
         ('x', np.float32),
         ('y', np.float32),
-        ('status', np.bool),
+        ('status', np.bool_),
         ('evt', np.uint8)
     ])
     evt_color_map = dict({
