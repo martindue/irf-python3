@@ -13,7 +13,7 @@ import scipy.signal as sg
 import matplotlib.pyplot as plt
 #import seaborn as sns
 
-from utils import round_up_to_odd, rolling_window
+from .utils import round_up_to_odd, rolling_window
 
 def get_px2deg(geom):
     """Calculates pix2deg values, based on simple geometry.
@@ -168,11 +168,11 @@ class ETData():
                                           type of ETData.dtype
         """
 
-        if not(kwargs.has_key('source')):
+        if not('source' in kwargs):
             try:
                 self.data = np.load(fpath)
             except:
-                print("ERROR loading %s" % fpath)
+                print(("ERROR loading %s" % fpath))
         else:
             if kwargs['source']=='etdata':
                 self.data = np.load(fpath)
@@ -221,7 +221,7 @@ class ETData():
             evt['posx_s'], evt['posx_e'], evt['posy_s'], evt['posy_e'],\
             evt['posx_mean'], evt['posy_mean'], evt['posx_med'], evt['posy_med'],\
             evt['pv'], evt['pv_index'], evt['rms'], evt['std']   = \
-               zip(*map(lambda x: calc_event_data(self, x), evt_compact))
+               list(zip(*[calc_event_data(self, x) for x in evt_compact]))
             evt['ampl_x'] = np.diff(evt[['posx_s', 'posx_e']])
             evt['ampl_y'] = np.diff(evt[['posy_s', 'posy_e']])
             evt['ampl'] = np.hypot(evt['ampl_x'], evt['ampl_y'])
@@ -246,7 +246,7 @@ class ETData():
         ax00.plot(self.data['t'], self.data['x'], '-')
         ax10.plot(self.data['t'], self.data['y'], '-')
         ax01.plot(self.data['x'], self.data['y'], '-')
-        for e, c in ETData.evt_color_map.iteritems():
+        for e, c in ETData.evt_color_map.items():
             mask = self.data['evt'] == e
             ax00.plot(self.data['t'][mask], self.data['x'][mask], '.', color = c)
             ax10.plot(self.data['t'][mask], self.data['y'][mask], '.', color = c)

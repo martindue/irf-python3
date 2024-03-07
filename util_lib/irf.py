@@ -17,8 +17,8 @@ from scipy.ndimage.morphology import binary_dilation
 import scipy.io as scio
 import astropy.stats as ast
 
-from utils import round_up_to_odd, round_up, rolling_window, vcorrcoef
-from etdata import aggr_events, get_px2deg
+from .utils import round_up_to_odd, round_up, rolling_window, vcorrcoef
+from .etdata import aggr_events, get_px2deg
 
 #%% functions and constants
 
@@ -74,7 +74,7 @@ def get_i2mc(etdata, fpath_i2mc, geom):
         fdir, fname = os.path.split(fpath_i2mc)
         mkpath(fdir)
         scio.savemat('{}/{}_raw{}'.format(fdir, *os.path.splitext(fname)), data_mat)
-        print ('%s does not exist. Run i2mc extractor first!'%fpath_i2mc)
+        print(('%s does not exist. Run i2mc extractor first!'%fpath_i2mc))
     return i2mc
 
 def calc_fixPos(etdata, fix, w=50):
@@ -217,28 +217,28 @@ def extractFeatures(etdata, **kwargs):
     features['rayleightest'] = ast.rayleightest(angl, axis=1)
 
     #i2mc
-    if kwargs.has_key('i2mc') and kwargs['i2mc'] is not None:
+    if 'i2mc' in kwargs and kwargs['i2mc'] is not None:
         features['i2mc'] = kwargs['i2mc']['finalweights'].flatten()
     else:
         features['i2mc'] = np.zeros(len(data))
 
     #remove padding and nans
     mask_nans = np.any([np.isnan(values) for key, values\
-                                         in features.iteritems()], axis=0)
+                                         in features.items()], axis=0)
     mask_pad = np.zeros_like(data['x'], dtype=np.bool)
     mask_pad[:ws_pad] = True
     mask_pad[-ws_pad:] = True
     mask = mask_nans | mask_pad | maskInterp
     features={key: values[~mask].astype(np.float32) for key, values \
-                                                    in features.iteritems()}
+                                                    in features.items()}
 
-    dtype = np.dtype(zip(features.keys(), itertools.repeat(np.float32)))
-    features = np.core.records.fromarrays(features.values(), dtype=dtype)
+    dtype = np.dtype(list(zip(list(features.keys()), itertools.repeat(np.float32))))
+    features = np.core.records.fromarrays(list(features.values()), dtype=dtype)
 
     #return features
     toc = time.time()
-    if kwargs.has_key('print_et') and kwargs['print_et']:
-        print 'Feature extraction took %.3f s.'%(toc-tic)
+    if 'print_et' in kwargs and kwargs['print_et']:
+        print('Feature extraction took %.3f s.'%(toc-tic))
     return features, ~mask
 
 def postProcess(etdata, pred, pred_mask, events = [1, 2, 3], dev = False, **kwargs):
@@ -467,7 +467,7 @@ class hpp():
     def reset_accum(self):
         '''Resets check accumulator
         '''
-        for k, v in self.check_accum.iteritems():
+        for k, v in self.check_accum.items():
             self.check_accum[k] = 0
 
     def run_pp(self, etdata, pp=True, **kwargs):
@@ -535,7 +535,7 @@ class hpp():
         #pp: find saccades surrounding undef;
         _sacc_check={'202':0, '20':0, '02':0}
         seq=''.join(map(str, _evt['evt']))
-        for pattern in _sacc_check.keys():
+        for pattern in list(_sacc_check.keys()):
             _check = np.array([m.start() for m in re.finditer('(?=%s)'%pattern, seq)])
             if not (len(_check)):
                 continue
@@ -577,7 +577,7 @@ class hpp():
         #pp: remove unreasonable psos
         _pso_check={'13':0, '03':0, '23':0 }
         seq=''.join(map(str, _evt['evt']))
-        for pattern in _pso_check.keys():
+        for pattern in list(_pso_check.keys()):
             _check = np.array([m.start() for m in re.finditer('(?=%s)'%pattern, seq)])
             if not (len(_check)):
                 continue

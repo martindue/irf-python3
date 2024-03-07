@@ -49,7 +49,7 @@ mkpath(ROOT_TEST)
 
 #select subjects
 subjects = [1, 2, 4, 5, 6]
-random.seed(062217)
+random.seed(0o62217)
 random.shuffle(subjects)
 subjects_test = subjects[:1]
 subjects_train = subjects[1:]
@@ -99,7 +99,7 @@ m = Z1.min()
 #%% augment data
 FILES = glob.glob('%s/%s/*.npy'%(ROOT, EXP))
 etdata = ETData()
-np.random.seed(062217)
+np.random.seed(0o62217)
 for fpath in FILES:
     fdir, fname = os.path.split(os.path.splitext(fpath)[0])
     sub = parse.parse('lookAtPoint_EL_S{sub:d}', fname).named['sub']
@@ -118,7 +118,7 @@ for fpath in FILES:
 
     #resample
     for fs in sampling_rates:
-        print sub, fs
+        print(sub, fs)
 
         if fs == 1000:
             #do not filter original data

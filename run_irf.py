@@ -69,7 +69,7 @@ pp = hpp()
 #%% Main
 #load classifier
 if args.clf is None:
-    print 'Classifier not provided'
+    print('Classifier not provided')
     sys.exit()
 else:
     print ('Loading model...')
