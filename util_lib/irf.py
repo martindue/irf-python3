@@ -119,7 +119,7 @@ def extractFeatures(etdata, **kwargs):
     #window size in samples for direction calculation
     ws_dir = round_up_to_odd(w_dir/1000.0*fs)
 
-    maskInterp = np.zeros(len(data), dtype=np.bool)
+    maskInterp = np.zeros(len(data), dtype=bool)
     '''Legacy code. Interpolates through missing points.
     if kwargs.has_key('interp') and kwargs['interp']:
         r = np.arange(len(data))
@@ -134,13 +134,13 @@ def extractFeatures(etdata, **kwargs):
     '''
 
     #prepare data for vectorized processing
-    ws_pad=(max((ws, ws_vel, ws_dir))-1)/2
+    ws_pad=(max((ws, ws_vel, ws_dir))-1)//2
     x_padded = np.pad(data['x'], (ws_pad, ws_pad),
                       'constant', constant_values=np.nan)
     y_padded = np.pad(data['y'], (ws_pad, ws_pad),
                       'constant', constant_values=np.nan)
 
-    ws_dir_pad=(ws_dir-1)/2
+    ws_dir_pad=(ws_dir-1)//2
     x_padded_dir=np.pad(data['x'], (ws_dir_pad, ws_dir_pad),
                         'constant', constant_values=np.nan)
     y_padded_dir=np.pad(data['y'], (ws_dir_pad, ws_dir_pad),
@@ -164,15 +164,15 @@ def extractFeatures(etdata, **kwargs):
         #aka tobii feature, together with data quality features and its variants
         means=np.nanmean(dd, axis = 1)
         meds=np.nanmedian(dd, axis = 1)
-        features['mean-diff-%s'%d] = np.roll(means, -(ws-1)/2) - \
-                                     np.roll(means,  (ws-1)/2)
-        features['med-diff-%s'%d] = np.roll(meds, -(ws-1)/2) - \
-                                    np.roll(meds,  (ws-1)/2)
+        features['mean-diff-%s'%d] = np.roll(means, -(ws-1)//2) - \
+                                     np.roll(means,  (ws-1)//2)
+        features['med-diff-%s'%d] = np.roll(meds, -(ws-1)//2) - \
+                                    np.roll(meds,  (ws-1)//2)
 
         #standard deviation
         features['std-%s'%d] = np.nanstd(dd, axis=1)
-        features['std-next-%s'%d] = np.roll(features['std-%s'%d], -(ws-1)/2)
-        features['std-prev-%s'%d] = np.roll(features['std-%s'%d],  (ws-1)/2)
+        features['std-next-%s'%d] = np.roll(features['std-%s'%d], -(ws-1)//2)
+        features['std-prev-%s'%d] = np.roll(features['std-%s'%d],  (ws-1)//2)
 
     features['mean-diff']= np.hypot(features['mean-diff-x'],
                                     features['mean-diff-y'])
@@ -191,14 +191,14 @@ def extractFeatures(etdata, **kwargs):
     features['bcea'] = 2 * k * np.pi * \
                        features['std-x'] * features['std-y'] * \
                        np.sqrt(1-np.power(rho,2))
-    features['bcea-diff'] = np.roll(features['bcea'], -(ws-1)/2) - \
-                            np.roll(features['bcea'], (ws-1)/2)
+    features['bcea-diff'] = np.roll(features['bcea'], -(ws-1)//2) - \
+                            np.roll(features['bcea'], (ws-1)//2)
 
     #RMS
     features['rms'] = np.hypot(np.sqrt(np.mean(np.square(dx_windowed), axis=1)),
                                np.sqrt(np.mean(np.square(dy_windowed), axis=1)))
-    features['rms-diff'] = np.roll(features['rms'], -(ws-1)/2) - \
-                           np.roll(features['rms'], (ws-1)/2)
+    features['rms-diff'] = np.roll(features['rms'], -(ws-1)//2) - \
+                           np.roll(features['rms'], (ws-1)//2)
 
     #disp, aka idt feature
     x_range = np.nanmax(x_windowed, axis=1) - np.nanmin(x_windowed, axis=1)
@@ -225,7 +225,7 @@ def extractFeatures(etdata, **kwargs):
     #remove padding and nans
     mask_nans = np.any([np.isnan(values) for key, values\
                                          in features.items()], axis=0)
-    mask_pad = np.zeros_like(data['x'], dtype=np.bool)
+    mask_pad = np.zeros_like(data['x'], dtype=bool)
     mask_pad[:ws_pad] = True
     mask_pad[-ws_pad:] = True
     mask = mask_nans | mask_pad | maskInterp
