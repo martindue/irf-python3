@@ -21,7 +21,7 @@ from datetime import datetime
 import parse
 
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.externals import joblib
+import joblib
 from sklearn.metrics import cohen_kappa_score
 
 from util_lib.etdata import ETData

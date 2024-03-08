@@ -78,7 +78,25 @@ sigma = w*2/(2.0*np.sqrt(2*np.log(xrms)))
 x = np.arange(-FWHM, FWHM, delta)
 y = np.arange(-FWHM, FWHM, delta)
 X, Y = np.meshgrid(x, y)
-Z1 = mlab.bivariate_normal(X, Y, sigma, sigma, 0.0, 0.0)
+
+#TODO: Move this function to a better place.
+def bivariate_normal(X, Y, sigmax=1.0, sigmay=1.0,
+                 mux=0.0, muy=0.0, sigmaxy=0.0):
+    """
+    Bivariate Gaussian distribution for equal shape *X*, *Y*.
+    See `bivariate normal
+    <http://mathworld.wolfram.com/BivariateNormalDistribution.html>`_
+    at mathworld.
+    """
+    Xmu = X-mux
+    Ymu = Y-muy
+
+    rho = sigmaxy/(sigmax*sigmay)
+    z = Xmu**2/sigmax**2 + Ymu**2/sigmay**2 - 2*rho*Xmu*Ymu/(sigmax*sigmay)
+    denom = 2*np.pi*sigmax*sigmay*np.sqrt(1-rho**2)
+    return np.exp(-z/(2*(1-rho**2))) / denom
+
+Z1 = bivariate_normal(X, Y, sigma, sigma, 0.0, 0.0)
 
 s = np.ptp(Z1)
 m = Z1.min()
@@ -158,7 +176,7 @@ for fpath in FILES:
             n = []
             for _sample in _data_noise:
                 X, Y = np.meshgrid(_sample['x'], _sample['y'])
-                v = mlab.bivariate_normal(X, Y, sigma, sigma, 0.0, 0.0)[0][0]
+                v = bivariate_normal(X, Y, sigma, sigma, 0.0, 0.0)[0][0]
                 v*=-1
                 v+=s+m
                 v*=(rms*(xrms-1)/s)
@@ -193,10 +211,10 @@ for fpath in FILES:
                 np.save('%s/train/%s_%d_%.3f_train1'%(ROOT_TRAIN, fname, fs, rms),
                         _data_noise[:val_ind])
                 np.save('%s/train/%s_%d_%.3f_train2'%(ROOT_TRAIN, fname, fs, rms),
-                        _data_noise[val_ind+0.25*l:])
+                        _data_noise[int(val_ind+0.25*l):])
 
                 np.save('%s/val/%s_%d_%.3f_val'%(ROOT_TRAIN, fname, fs, rms),
-                        _data_noise[val_ind:val_ind+0.25*l])
+                        _data_noise[val_ind:int(val_ind+0.25*l)])
             else:
                 np.save('%s/%s_%d_%.3f_test'%(ROOT_TEST, fname, fs, rms),
                         _data_noise)

@@ -13,7 +13,7 @@ import scipy.signal as sg
 import matplotlib.pyplot as plt
 #import seaborn as sns
 
-from .utils import round_up_to_odd, rolling_window
+from utils import round_up_to_odd, rolling_window
 
 def get_px2deg(geom):
     """Calculates pix2deg values, based on simple geometry.
