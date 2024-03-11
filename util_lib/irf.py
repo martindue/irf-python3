@@ -298,14 +298,14 @@ def postProcess(etdata, pred, pred_mask, events = [1, 2, 3], dev = False, **kwar
     events_pp[ind_merge_fix, 2:]=-1
 
     #3.1 expand saccades; can be implemented as hpp
-    thres_sd_s=kwargs['thres_sd_s'] #make saccades to be at least 3 samples
+    thres_sd_s=int(kwargs['thres_sd_s']) #make saccades to be at least 3 samples
     _events = np.argmax(np.around(events_pp, 3), axis=1)
     _events_aggr = np.array(aggr_events(_events))
     _events_sacc = _events_aggr[_events_aggr[:,-1]==2]
     _sd = _events_sacc[:,1]-_events_sacc[:,0]
     mask_expand_sacc = _sd < thres_sd_s
     ind_mid_sacc=(_events_sacc[mask_expand_sacc][:,1]-_events_sacc[mask_expand_sacc][:,0])/2+_events_sacc[mask_expand_sacc][:,0]
-    ind_rem_fix=[i for s, e in zip(ind_mid_sacc-(thres_sd_s/2+thres_sd_s%2), ind_mid_sacc+(thres_sd_s/2))  for i in range(s, e)]
+    ind_rem_fix = [i for s, e in zip(ind_mid_sacc - (thres_sd_s // 2 + thres_sd_s % 2), ind_mid_sacc + (thres_sd_s // 2)) for i in range(int(s), int(e))]
     events_pp[ind_rem_fix, :2]=-1
     events_pp[ind_rem_fix, 3]=-1
     events_pp[ind_rem_fix, 2]=1
