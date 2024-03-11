@@ -116,7 +116,9 @@ for fpath in tqdm(FILES):
 
     #select required features, transform to matrix and predict
     X = irf_features[ft]
-    X = X.view((np.float32, len(X.dtype.names)))
+    X_arrays = [X[field] for field in X.dtype.names]  # Convert the structured array to a list of arrays (each field becomes a separate array)
+    X = np.array(X_arrays)                            # Stack the arrays horizontally to create a 2D array
+    X = X.view(np.float32).transpose()
     pred = clf.predict_proba(X)
 
     #probabilistic post-processing
