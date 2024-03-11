@@ -109,9 +109,10 @@ for fpath in tqdm(FILES[:]):
 
         #select required features
         X = irf_features[ft_all]
-        X_arrays = [X[field] for field in X.dtype.names]  # Convert the structured array to a list of arrays (each field becomes a separate array)
-        X = np.array(X_arrays)                            # Stack the arrays horizontally to create a 2D array
-        X = X.view(np.float32).transpose()
+        new_dtype = [(name, np.float32) for name in X.dtype.names]
+        # Create a new structured array with float32 data types
+        X = X.astype(new_dtype)
+        X = X.view(np.float32).reshape(X.shape + (-1,))
 
         y = etdata.data['evt'][pred_mask]
 
