@@ -96,14 +96,13 @@ for fpath in tqdm(FILES[:]):
         #extract features
         if 'i2mc' in config['features']:
 
-            fpath_i2mc = '%s/i2mc/%s_i2mc.mat'%(odir, fname)
+            fpath_i2mc = '%s/i2mc/%s_i2mc.joblib'%(odir, fname)
             i2mc = get_i2mc(etdata, fpath_i2mc, config['geom'])
             if i2mc is None:
                 i2mc_ok = False
                 continue
             else:
                 config['extr_kwargs']['i2mc'] = i2mc
-
 
         irf_features, pred_mask = extractFeatures(etdata, **config['extr_kwargs'])
 

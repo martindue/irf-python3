@@ -101,7 +101,7 @@ for fpath in tqdm(FILES):
     #extract features
     if 'i2mc' in ft:
         fdir_i2mc = odir.replace(ROOT_OUTPUT, '%s/i2mc'%ROOT_OUTPUT)
-        fpath_i2mc = '%s/%s_i2mc.mat'%(fdir_i2mc, fname)
+        fpath_i2mc = '%s/%s_i2mc.joblib'%(fdir_i2mc, fname)
         i2mc = get_i2mc(etdata, fpath_i2mc, config['geom'])
         if i2mc is None:
             continue

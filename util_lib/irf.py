@@ -10,11 +10,13 @@ import itertools, re
 from distutils.dir_util import mkpath
 
 import numpy as np
+import pandas as pd
 import scipy.signal as sg
 import scipy.interpolate as interp
 from scipy.ndimage.filters import gaussian_filter1d
 from scipy.ndimage.morphology import binary_dilation
-import scipy.io as scio
+import I2MC
+import joblib
 import astropy.stats as ast
 
 from .utils import round_up_to_odd, round_up, rolling_window, vcorrcoef
@@ -54,27 +56,58 @@ def get_i2mc(etdata, fpath_i2mc, geom):
         i2mc features if exists. Saves mat files for using it with i2mc extractor
     """
     if os.path.exists(fpath_i2mc):
-        i2mc = scio.loadmat(fpath_i2mc)
+        print(('%s already exists. We just load it.'%fpath_i2mc))
+        i2mc = joblib.load(fpath_i2mc)
     else:
-        i2mc = None
-        ## convert to mat formal
-        data = etdata.data
+        timer = time.time()
+        data = etdata.data #sus?
         px2deg = get_px2deg(geom)
+        t = np.float64((data['t'] - data['t'].min()) * 1000).flatten()
+      
+        X = np.float64(data['x'] * px2deg + geom['display_width_pix'] / 2).flatten()
+        Y = np.float64(data['y'] * px2deg + geom['display_height_pix'] / 2).flatten()
 
-        t = (data['t']-data['t'].min())*1000
-        t = np.float64(t[:,np.newaxis])
-
-        X = np.float64(data['x'][:,np.newaxis]*px2deg+geom['display_width_pix']/2)
-        Y = np.float64(data['y'][:,np.newaxis]*px2deg+geom['display_height_pix']/2)
         X[np.isnan(X)] = -geom['display_width_pix']
         Y[np.isnan(Y)] = -geom['display_height_pix']
 
-        data_mat=dict({'time': t , 'right':dict({'X': X, 'Y':Y}), 'fs':etdata.fs})
+        data_df = pd.DataFrame({'time': t, 'R_X': X, 'R_Y': Y})
+
+        opt = {}
+        opt['xres'] = 1920
+        opt['yres'] = 1080
+        opt['missingx'] = -opt['xres']
+        opt['missingy'] = -opt['yres']
+
+        opt['scrSz'] = [53.3, 30.1]
+        opt['disttoscreen'] = 56.5
+        opt['steptime'] = 0
+
+        opt['freq'] = etdata.fs 
+        if opt['freq'] == 120:
+            opt['downsamples'] = [2, 3, 5]
+            opt['chebyOrder'] = 7
+        elif opt['freq'] == 60:
+            opt['downsamples'] = [2, 3, 4]
+            opt['chebyOrder'] = 3
+        elif opt['freq'] == 30:
+            opt['downsamples'] = [2, 3]
+            opt['chebyOrder'] = 1
+        else:
+            opt['downsamples'] = [2, 5, 10]
+            opt['chebyOrder'] = 8
+
+        _,returned_data,_ = I2MC.I2MC(data_df, opt)
+        finalweights = returned_data['finalweights']
 
         fdir, fname = os.path.split(fpath_i2mc)
         mkpath(fdir)
-        scio.savemat('{}/{}_raw{}'.format(fdir, *os.path.splitext(fname)), data_mat)
-        print(('%s does not exist. Run i2mc extractor first!'%fpath_i2mc))
+
+        joblib.dump(finalweights, fpath_i2mc)
+
+        print("Elapsed time is ", time.time() - timer, " seconds.")
+        
+        i2mc = {'finalweights':finalweights.to_numpy()}
+
     return i2mc
 
 def calc_fixPos(etdata, fix, w=50):
