@@ -73,13 +73,13 @@ def get_i2mc(etdata, fpath_i2mc, geom):
         data_df = pd.DataFrame({'time': t, 'R_X': X, 'R_Y': Y})
 
         opt = {}
-        opt['xres'] = 1920
-        opt['yres'] = 1080
+        opt['xres'] = geom['display_width_pix']
+        opt['yres'] = geom['display_height_pix']
         opt['missingx'] = -opt['xres']
         opt['missingy'] = -opt['yres']
 
-        opt['scrSz'] = [53.3, 30.1]
-        opt['disttoscreen'] = 56.5
+        opt['scrSz'] = [geom['screen_width']/10, geom['screen_height']/10]
+        opt['disttoscreen'] = geom['eye_distance']
         opt['steptime'] = 0
 
         opt['freq'] = etdata.fs 
